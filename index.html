@@ -479,13 +479,111 @@ nav.scrolled { border-color: var(--border); }
 
 .feature-card {
   background: var(--surface);
-  padding: 32px 28px;
+  padding: 28px 24px;
 }
 
-.feature-card .icon {
-  font-size: 20px;
+.feature-vis {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
   margin-bottom: 16px;
-  display: block;
+  min-height: 90px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+/* Mini CI status dots */
+.mini-ci { display: flex; flex-direction: column; gap: 6px; width: 100%; }
+.mini-ci-row { display: flex; align-items: center; gap: 8px; font-size: 10px; }
+.mini-ci-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.mini-ci-dot.ok { background: var(--green); box-shadow: 0 0 6px var(--green-glow); }
+.mini-ci-dot.fail { background: var(--red); }
+.mini-ci-dot.warn { background: var(--yellow); }
+.mini-ci-name { color: var(--muted); flex: 1; }
+.mini-ci-val { color: var(--text); font-weight: 500; }
+
+/* Mini velocity chart (pure CSS) */
+.mini-chart { display: flex; align-items: flex-end; gap: 3px; height: 56px; }
+.mini-bar {
+  width: 12px;
+  border-radius: 2px 2px 0 0;
+  background: var(--green);
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+.mini-bar:hover { opacity: 1; }
+.mini-bar.dim { background: var(--border); }
+
+/* Mini stale branches */
+.mini-stale { display: flex; flex-direction: column; gap: 5px; width: 100%; }
+.mini-stale-row { display: flex; align-items: center; gap: 8px; font-size: 10px; }
+.mini-stale-bar {
+  height: 4px;
+  border-radius: 2px;
+  flex: 1;
+}
+.mini-stale-bar.hot { background: var(--red); }
+.mini-stale-bar.warm { background: var(--yellow); }
+.mini-stale-bar.cool { background: var(--border); }
+.mini-stale-days { color: var(--muted); font-size: 10px; min-width: 28px; text-align: right; }
+
+/* Mini device flow */
+.mini-device { text-align: center; }
+.mini-device-code {
+  font-family: var(--mono);
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  color: var(--green);
+  margin-bottom: 4px;
+}
+.mini-device-label { font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+
+/* Mini JSON */
+.mini-json {
+  font-family: var(--mono);
+  font-size: 9.5px;
+  line-height: 1.5;
+  color: var(--muted);
+  text-align: left;
+  width: 100%;
+}
+.mini-json .key { color: var(--green); }
+.mini-json .str { color: var(--yellow); }
+.mini-json .num { color: #a78bfa; }
+
+/* Mini demo toggle */
+.mini-demo { text-align: center; }
+.mini-demo-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 6px 16px;
+  font-size: 11px;
+  color: var(--muted);
+}
+.mini-demo-pill {
+  width: 32px;
+  height: 18px;
+  border-radius: 9px;
+  background: var(--green);
+  position: relative;
+}
+.mini-demo-pill::after {
+  content: '';
+  position: absolute;
+  right: 3px;
+  top: 3px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: white;
 }
 
 .feature-card h3 {
@@ -741,34 +839,85 @@ footer a:hover { color: var(--text); }
     </div>
     <div class="feature-grid reveal">
       <div class="feature-card">
-        <span class="icon">&#9679;</span>
+        <div class="feature-vis">
+          <div class="mini-ci">
+            <div class="mini-ci-row"><div class="mini-ci-dot ok"></div><span class="mini-ci-name">api-gateway</span><span class="mini-ci-val" style="color:var(--green)">92%</span></div>
+            <div class="mini-ci-row"><div class="mini-ci-dot fail"></div><span class="mini-ci-name">ml-pipeline</span><span class="mini-ci-val" style="color:var(--red)">58%</span></div>
+            <div class="mini-ci-row"><div class="mini-ci-dot ok"></div><span class="mini-ci-name">web-app</span><span class="mini-ci-val" style="color:var(--green)">100%</span></div>
+            <div class="mini-ci-row"><div class="mini-ci-dot warn"></div><span class="mini-ci-name">shared-libs</span><span class="mini-ci-val" style="color:var(--yellow)">71%</span></div>
+          </div>
+        </div>
         <h3>CI Health at a Glance</h3>
-        <p>Latest run status per repo per trigger. Success rates: 7d / 30d / 90d. Avg duration trends.</p>
+        <p>Latest run status per repo. Success rates: 7d / 30d / 90d. Spot failures instantly.</p>
       </div>
       <div class="feature-card">
-        <span class="icon">&#9650;</span>
+        <div class="feature-vis">
+          <div class="mini-chart">
+            <div class="mini-bar dim" style="height:20%"></div>
+            <div class="mini-bar dim" style="height:30%"></div>
+            <div class="mini-bar" style="height:45%"></div>
+            <div class="mini-bar" style="height:35%"></div>
+            <div class="mini-bar" style="height:60%"></div>
+            <div class="mini-bar" style="height:50%"></div>
+            <div class="mini-bar" style="height:75%"></div>
+            <div class="mini-bar" style="height:65%"></div>
+            <div class="mini-bar" style="height:90%"></div>
+            <div class="mini-bar" style="height:80%"></div>
+            <div class="mini-bar" style="height:95%"></div>
+            <div class="mini-bar" style="height:85%"></div>
+            <div class="mini-bar" style="height:100%"></div>
+          </div>
+        </div>
         <h3>Merge Velocity</h3>
-        <p>Track merges/day across repos. Spot downward trends before they become blockers.</p>
+        <p>Merges/day trend across repos. Spot downward trends before they become blockers.</p>
       </div>
       <div class="feature-card">
-        <span class="icon">&#9724;</span>
+        <div class="feature-vis">
+          <div class="mini-stale">
+            <div class="mini-stale-row"><div class="mini-stale-bar hot" style="width:90%"></div><span class="mini-stale-days">28d</span></div>
+            <div class="mini-stale-row"><div class="mini-stale-bar hot" style="width:60%"></div><span class="mini-stale-days">18d</span></div>
+            <div class="mini-stale-row"><div class="mini-stale-bar warm" style="width:35%"></div><span class="mini-stale-days">10d</span></div>
+            <div class="mini-stale-row"><div class="mini-stale-bar cool" style="width:15%"></div><span class="mini-stale-days">4d</span></div>
+          </div>
+        </div>
         <h3>Stale Branch Detection</h3>
         <p>Branches with no commit in 3+ days. Paginated, sortable. Clean up dead weight.</p>
       </div>
       <div class="feature-card">
-        <span class="icon">&#9670;</span>
+        <div class="feature-vis">
+          <div class="mini-device">
+            <div class="mini-device-code">ABCD-1234</div>
+            <div class="mini-device-label">Enter at github.com/login/device</div>
+          </div>
+        </div>
         <h3>GitHub Device Flow Auth</h3>
         <p>Zero-config login. No OAuth app registration needed. Like <code>gh auth login</code>.</p>
       </div>
       <div class="feature-card">
-        <span class="icon">&#8594;</span>
+        <div class="feature-vis">
+          <div class="mini-json">
+            <div>{</div>
+            <div>&nbsp; <span class="key">"repos"</span>: <span class="num">5</span>,</div>
+            <div>&nbsp; <span class="key">"open_prs"</span>: <span class="num">18</span>,</div>
+            <div>&nbsp; <span class="key">"velocity"</span>: <span class="num">3.4</span>,</div>
+            <div>&nbsp; <span class="key">"stale"</span>: <span class="num">6</span></div>
+            <div>}</div>
+          </div>
+        </div>
         <h3>JSON Snapshot API</h3>
         <p><code>GET /api/snapshot</code> — full dashboard state in one call. Built for agents and automation.</p>
       </div>
       <div class="feature-card">
-        <span class="icon">&#9711;</span>
+        <div class="feature-vis">
+          <div class="mini-demo">
+            <div class="mini-demo-toggle">
+              <span>DEMO_MODE</span>
+              <div class="mini-demo-pill"></div>
+            </div>
+          </div>
+        </div>
         <h3>Demo Mode</h3>
-        <p><code>DEMO_MODE=true</code> — try the full dashboard with realistic fake data. No GitHub needed.</p>
+        <p>Try the full dashboard with realistic fake data. No GitHub connection needed.</p>
       </div>
     </div>
   </div>
