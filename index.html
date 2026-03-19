@@ -315,31 +315,139 @@ nav.scrolled { border-color: var(--border); }
 .terminal-body .prompt { color: var(--green); }
 .terminal-body .line { margin-bottom: 2px; }
 
-.badge-before {
-  display: inline-block;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  padding: 2px 8px;
-  border-radius: 3px;
-  background: var(--red-dim);
-  color: var(--red);
-  margin-bottom: 12px;
+/* --- Dashboard mockup cards --- */
+.dash-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
 }
 
-.badge-after {
-  display: inline-block;
-  font-size: 10px;
+.dash-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.dash-label {
+  font-size: 11px;
   font-weight: 700;
   letter-spacing: 1px;
   text-transform: uppercase;
+}
+
+.dash-label-before { color: var(--muted); }
+.dash-label-after { color: var(--green); }
+
+.dash-tag {
+  font-size: 10px;
   padding: 2px 8px;
   border-radius: 3px;
+}
+.dash-tag-dim { background: rgba(100,100,120,0.15); color: var(--muted); }
+.dash-tag-green { background: var(--green-glow); color: var(--green); }
+
+.dash-body { padding: 20px; }
+
+/* Before: metric grid */
+.metric-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.metric-box {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px 16px;
+  text-align: center;
+}
+
+.metric-box .val {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-bright);
+  margin-bottom: 4px;
+}
+.metric-box .val.warn { color: var(--yellow); }
+.metric-box .val.bad { color: var(--red); }
+
+.metric-box .lbl {
+  font-size: 10px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.metric-shrug {
+  text-align: center;
+  color: var(--muted);
+  font-size: 12px;
+  margin-top: 16px;
+  padding: 10px;
+  border: 1px dashed var(--border);
+  border-radius: 6px;
+}
+
+/* After: recommendation cards */
+.rec-card {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px 18px;
+  margin-bottom: 12px;
+  background: var(--surface2);
+  border-left: 3px solid var(--green);
+}
+.rec-card:last-child { margin-bottom: 0; }
+
+.rec-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-bright);
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.rec-title .icon-alert {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
   background: var(--green-glow);
   color: var(--green);
-  margin-bottom: 12px;
+  font-size: 11px;
+  font-weight: 700;
+  flex-shrink: 0;
 }
+
+.rec-row {
+  display: flex;
+  gap: 8px;
+  font-size: 12px;
+  margin-bottom: 4px;
+  line-height: 1.6;
+}
+
+.rec-row .tag {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  min-width: 50px;
+  flex-shrink: 0;
+  padding-top: 2px;
+}
+
+.rec-row .tag-signal { color: var(--muted); }
+.rec-row .tag-action { color: var(--green); }
+.rec-row .tag-tobe { color: var(--yellow); }
 
 /* --- Features --- */
 .features {
@@ -563,44 +671,59 @@ footer a:hover { color: var(--text); }
       <h2>Metrics don't fix bottlenecks.<br>Actions do.</h2>
     </div>
     <div class="compare-grid reveal">
-      <div class="terminal">
-        <div class="terminal-bar">
-          <div class="terminal-dot"></div>
-          <div class="terminal-dot"></div>
-          <div class="terminal-dot"></div>
-          <span class="terminal-title">typical-dashboard.app</span>
+      <!-- BEFORE: typical dashboard — just numbers -->
+      <div class="dash-panel">
+        <div class="dash-header">
+          <span class="dash-label dash-label-before">Typical Dashboard</span>
+          <span class="dash-tag dash-tag-dim">metrics only</span>
         </div>
-        <div class="terminal-body">
-          <div class="badge-before">Before</div>
-          <div class="line"><span class="dim">CI Success Rate</span>  <span class="yellow">68%</span></div>
-          <div class="line"><span class="dim">Avg PR Age</span>       <span class="red">4.2 days</span></div>
-          <div class="line"><span class="dim">Open PRs</span>         <span class="bright">24</span></div>
-          <div class="line"><span class="dim">Stale Branches</span>   <span class="yellow">18</span></div>
-          <div class="line"><span class="dim">Merge Velocity</span>   <span class="bright">2.1/day</span></div>
-          <div class="line">&nbsp;</div>
-          <div class="line"><span class="dim">// 12 metrics across 4 tabs</span></div>
-          <div class="line"><span class="dim">// what do you do about it?</span></div>
-          <div class="line"><span class="dim">// ...</span></div>
+        <div class="dash-body">
+          <div class="metric-grid">
+            <div class="metric-box">
+              <div class="val warn">68%</div>
+              <div class="lbl">CI Success Rate</div>
+            </div>
+            <div class="metric-box">
+              <div class="val bad">4.2d</div>
+              <div class="lbl">Avg PR Age</div>
+            </div>
+            <div class="metric-box">
+              <div class="val">24</div>
+              <div class="lbl">Open PRs</div>
+            </div>
+            <div class="metric-box">
+              <div class="val warn">18</div>
+              <div class="lbl">Stale Branches</div>
+            </div>
+          </div>
+          <div class="metric-shrug">Numbers are there. Now what?</div>
         </div>
       </div>
-      <div class="terminal">
-        <div class="terminal-bar">
-          <div class="terminal-dot" style="background:var(--green)"></div>
-          <div class="terminal-dot" style="background:var(--green);opacity:0.5"></div>
-          <div class="terminal-dot" style="background:var(--green);opacity:0.25"></div>
-          <span class="terminal-title">pung</span>
+      <!-- AFTER: Pung — prescriptive recommendations -->
+      <div class="dash-panel" style="border-color: rgba(34,197,94,0.3);">
+        <div class="dash-header" style="border-color: rgba(34,197,94,0.15);">
+          <span class="dash-label dash-label-after">Pung</span>
+          <span class="dash-tag dash-tag-green">prescriptive</span>
         </div>
-        <div class="terminal-body">
-          <div class="badge-after">After</div>
-          <div class="line"><span class="red">!</span> <span class="bright">PR review is your bottleneck</span></div>
-          <div class="line">&nbsp;</div>
-          <div class="line"><span class="dim">Signal:</span> <span class="bright">Avg PR open 4.2 days, 3x team avg</span></div>
-          <div class="line"><span class="dim">Action:</span> <span class="green">Cap PRs at 400 lines. Split large PRs.</span></div>
-          <div class="line"><span class="dim">To-be:</span>  <span class="bright">Same-day merge rate > 70%</span></div>
-          <div class="line">&nbsp;</div>
-          <div class="line"><span class="dim">Signal:</span> <span class="bright">api-gateway CI at 58% (7d)</span></div>
-          <div class="line"><span class="dim">Action:</span> <span class="green">Freeze features. Fix CI first.</span></div>
-          <div class="line"><span class="dim">To-be:</span>  <span class="bright">Green baseline before new work</span></div>
+        <div class="dash-body">
+          <div class="rec-card">
+            <div class="rec-title">
+              <span class="icon-alert">!</span>
+              PR review is your bottleneck
+            </div>
+            <div class="rec-row"><span class="tag tag-signal">Signal</span><span>Avg PR open 4.2 days — 3x your team average</span></div>
+            <div class="rec-row"><span class="tag tag-action">Action</span><span>Cap PRs at 400 lines. Split large PRs.</span></div>
+            <div class="rec-row"><span class="tag tag-tobe">To-be</span><span>Same-day merge rate > 70%</span></div>
+          </div>
+          <div class="rec-card">
+            <div class="rec-title">
+              <span class="icon-alert">!</span>
+              api-gateway CI unstable
+            </div>
+            <div class="rec-row"><span class="tag tag-signal">Signal</span><span>CI success rate 58% over 7 days</span></div>
+            <div class="rec-row"><span class="tag tag-action">Action</span><span>Freeze features. Stabilize CI first.</span></div>
+            <div class="rec-row"><span class="tag tag-tobe">To-be</span><span>Green baseline before new work</span></div>
+          </div>
         </div>
       </div>
     </div>
