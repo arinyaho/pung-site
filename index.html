@@ -7,7 +7,7 @@
 <meta name="description" content="Your CI dashboard shows what's broken. vvere tells you what to fix. Open source, self-hosted, zero config.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
 <style>
 :root {
   --bg: #0a0c10;
@@ -24,7 +24,7 @@
   --red-dim: rgba(248, 113, 113, 0.15);
   --yellow: #fbbf24;
   --mono: 'JetBrains Mono', 'Fira Code', monospace;
-  --serif: 'Instrument Serif', Georgia, serif;
+  --display: 'JetBrains Mono', monospace;
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -140,13 +140,12 @@ nav.scrolled { border-color: var(--border); }
 }
 
 .hero h1 {
-  font-family: var(--serif);
-  font-size: clamp(36px, 6vw, 64px);
-  font-weight: 400;
-  font-style: italic;
+  font-family: var(--display);
+  font-size: clamp(32px, 5vw, 52px);
+  font-weight: 700;
   color: var(--text-bright);
-  line-height: 1.15;
-  letter-spacing: -1px;
+  line-height: 1.2;
+  letter-spacing: -1.5px;
   max-width: 750px;
   opacity: 0;
   animation: fadeUp 0.6s 0.35s forwards;
@@ -155,18 +154,6 @@ nav.scrolled { border-color: var(--border); }
 .hero h1 em {
   font-style: normal;
   color: var(--green);
-  position: relative;
-}
-
-.hero h1 em::after {
-  content: '';
-  position: absolute;
-  bottom: 2px;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: var(--green);
-  opacity: 0.4;
 }
 
 .hero-sub {
@@ -253,9 +240,9 @@ nav.scrolled { border-color: var(--border); }
 }
 
 .compare h2 {
-  font-family: var(--serif);
-  font-size: clamp(28px, 4vw, 42px);
-  font-weight: 400;
+  font-family: var(--display);
+  font-size: clamp(24px, 3.5vw, 36px);
+  font-weight: 700;
   color: var(--text-bright);
   line-height: 1.2;
   margin-bottom: 60px;
@@ -455,9 +442,9 @@ nav.scrolled { border-color: var(--border); }
 }
 
 .features h2 {
-  font-family: var(--serif);
-  font-size: clamp(28px, 4vw, 42px);
-  font-weight: 400;
+  font-family: var(--display);
+  font-size: clamp(24px, 3.5vw, 36px);
+  font-weight: 700;
   color: var(--text-bright);
   line-height: 1.2;
   margin-bottom: 60px;
@@ -605,9 +592,9 @@ nav.scrolled { border-color: var(--border); }
 }
 
 .setup h2 {
-  font-family: var(--serif);
-  font-size: clamp(28px, 4vw, 42px);
-  font-weight: 400;
+  font-family: var(--display);
+  font-size: clamp(24px, 3.5vw, 36px);
+  font-weight: 700;
   color: var(--text-bright);
   line-height: 1.2;
   margin-bottom: 16px;
@@ -639,9 +626,9 @@ nav.scrolled { border-color: var(--border); }
 }
 
 .waitlist h2 {
-  font-family: var(--serif);
-  font-size: clamp(28px, 4vw, 42px);
-  font-weight: 400;
+  font-family: var(--display);
+  font-size: clamp(24px, 3.5vw, 36px);
+  font-weight: 700;
   color: var(--text-bright);
   line-height: 1.2;
   margin-bottom: 12px;
