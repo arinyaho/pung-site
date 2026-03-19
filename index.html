@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pung — Prescriptive CI/CD Dashboard</title>
+<meta name="description" content="Your CI dashboard shows what's broken. Pung tells you what to fix. Open source, self-hosted, zero config.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0c10;
+  --surface: #12151c;
+  --surface2: #1a1e2a;
+  --border: #252a3a;
+  --text: #c9d1d9;
+  --text-bright: #e6edf3;
+  --muted: #484f58;
+  --green: #22c55e;
+  --green-dim: #16a34a;
+  --green-glow: rgba(34, 197, 94, 0.12);
+  --red: #f87171;
+  --red-dim: rgba(248, 113, 113, 0.15);
+  --yellow: #fbbf24;
+  --mono: 'JetBrains Mono', 'Fira Code', monospace;
+  --serif: 'Instrument Serif', Georgia, serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 14px;
+  line-height: 1.7;
+  overflow-x: hidden;
+}
+
+/* --- Grain overlay --- */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* --- Selection --- */
+::selection {
+  background: var(--green);
+  color: var(--bg);
+}
+
+/* --- Layout --- */
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* --- Nav --- */
+nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  padding: 16px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(10, 12, 16, 0.85);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.3s;
+}
+nav.scrolled { border-color: var(--border); }
+
+.nav-brand {
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--text-bright);
+  letter-spacing: -0.5px;
+}
+.nav-brand span { color: var(--green); }
+
+.nav-links { display: flex; gap: 24px; align-items: center; }
+.nav-links a {
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 13px;
+  transition: color 0.2s;
+}
+.nav-links a:hover { color: var(--text-bright); }
+
+.nav-gh {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text) !important;
+  border: 1px solid var(--border);
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 12px;
+  transition: all 0.2s;
+}
+.nav-gh:hover { border-color: var(--muted); color: var(--text-bright) !important; }
+
+/* --- Hero --- */
+.hero {
+  padding: 180px 0 100px;
+  position: relative;
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  top: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 600px;
+  height: 400px;
+  background: radial-gradient(ellipse, var(--green-glow) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.hero-eyebrow {
+  font-size: 12px;
+  color: var(--green);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 24px;
+  opacity: 0;
+  animation: fadeUp 0.6s 0.2s forwards;
+}
+
+.hero h1 {
+  font-family: var(--serif);
+  font-size: clamp(36px, 6vw, 64px);
+  font-weight: 400;
+  font-style: italic;
+  color: var(--text-bright);
+  line-height: 1.15;
+  letter-spacing: -1px;
+  max-width: 750px;
+  opacity: 0;
+  animation: fadeUp 0.6s 0.35s forwards;
+}
+
+.hero h1 em {
+  font-style: normal;
+  color: var(--green);
+  position: relative;
+}
+
+.hero h1 em::after {
+  content: '';
+  position: absolute;
+  bottom: 2px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--green);
+  opacity: 0.4;
+}
+
+.hero-sub {
+  font-size: 15px;
+  color: var(--muted);
+  margin-top: 24px;
+  max-width: 520px;
+  line-height: 1.8;
+  opacity: 0;
+  animation: fadeUp 0.6s 0.5s forwards;
+}
+
+.hero-cta {
+  display: flex;
+  gap: 12px;
+  margin-top: 40px;
+  flex-wrap: wrap;
+  opacity: 0;
+  animation: fadeUp 0.6s 0.65s forwards;
+}
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--green);
+  color: var(--bg);
+  padding: 12px 24px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 13px;
+  font-family: var(--mono);
+  transition: all 0.2s;
+  border: none;
+  cursor: pointer;
+}
+.btn-primary:hover {
+  background: var(--green-dim);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 20px var(--green-glow);
+}
+
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  color: var(--text);
+  padding: 12px 24px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 13px;
+  font-family: var(--mono);
+  border: 1px solid var(--border);
+  transition: all 0.2s;
+  cursor: pointer;
+}
+.btn-ghost:hover {
+  border-color: var(--muted);
+  color: var(--text-bright);
+  transform: translateY(-1px);
+}
+
+/* --- Divider --- */
+.divider {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 0;
+}
+
+/* --- Compare Section --- */
+.compare {
+  padding: 100px 0;
+}
+
+.section-label {
+  font-size: 11px;
+  color: var(--green);
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+
+.compare h2 {
+  font-family: var(--serif);
+  font-size: clamp(28px, 4vw, 42px);
+  font-weight: 400;
+  color: var(--text-bright);
+  line-height: 1.2;
+  margin-bottom: 60px;
+}
+
+.compare-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+@media (max-width: 700px) {
+  .compare-grid { grid-template-columns: 1fr; }
+}
+
+.terminal {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.terminal-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 14px;
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+}
+
+.terminal-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--border);
+}
+
+.terminal-title {
+  font-size: 11px;
+  color: var(--muted);
+  margin-left: 8px;
+}
+
+.terminal-body {
+  padding: 20px;
+  font-size: 12.5px;
+  line-height: 1.8;
+  min-height: 280px;
+}
+
+.terminal-body .dim { color: var(--muted); }
+.terminal-body .green { color: var(--green); }
+.terminal-body .red { color: var(--red); }
+.terminal-body .yellow { color: var(--yellow); }
+.terminal-body .bright { color: var(--text-bright); }
+.terminal-body .prompt { color: var(--green); }
+.terminal-body .line { margin-bottom: 2px; }
+
+.badge-before {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 3px;
+  background: var(--red-dim);
+  color: var(--red);
+  margin-bottom: 12px;
+}
+
+.badge-after {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 3px;
+  background: var(--green-glow);
+  color: var(--green);
+  margin-bottom: 12px;
+}
+
+/* --- Features --- */
+.features {
+  padding: 100px 0;
+}
+
+.features h2 {
+  font-family: var(--serif);
+  font-size: clamp(28px, 4vw, 42px);
+  font-weight: 400;
+  color: var(--text-bright);
+  line-height: 1.2;
+  margin-bottom: 60px;
+}
+
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+@media (max-width: 700px) {
+  .feature-grid { grid-template-columns: 1fr; }
+}
+
+.feature-card {
+  background: var(--surface);
+  padding: 32px 28px;
+}
+
+.feature-card .icon {
+  font-size: 20px;
+  margin-bottom: 16px;
+  display: block;
+}
+
+.feature-card h3 {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-bright);
+  margin-bottom: 8px;
+}
+
+.feature-card p {
+  font-size: 12.5px;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+/* --- Setup --- */
+.setup {
+  padding: 100px 0;
+}
+
+.setup h2 {
+  font-family: var(--serif);
+  font-size: clamp(28px, 4vw, 42px);
+  font-weight: 400;
+  color: var(--text-bright);
+  line-height: 1.2;
+  margin-bottom: 16px;
+}
+
+.setup-sub {
+  color: var(--muted);
+  font-size: 14px;
+  margin-bottom: 40px;
+}
+
+.setup-terminal {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  max-width: 600px;
+}
+
+.setup-terminal .terminal-body {
+  min-height: auto;
+  padding: 24px;
+}
+
+/* --- Waitlist --- */
+.waitlist {
+  padding: 100px 0 140px;
+  text-align: center;
+}
+
+.waitlist h2 {
+  font-family: var(--serif);
+  font-size: clamp(28px, 4vw, 42px);
+  font-weight: 400;
+  color: var(--text-bright);
+  line-height: 1.2;
+  margin-bottom: 12px;
+}
+
+.waitlist p {
+  color: var(--muted);
+  font-size: 14px;
+  margin-bottom: 32px;
+}
+
+.waitlist-form {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  max-width: 440px;
+  margin: 0 auto;
+  flex-wrap: wrap;
+}
+
+.waitlist-form input {
+  flex: 1;
+  min-width: 220px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 16px;
+  color: var(--text-bright);
+  font-family: var(--mono);
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.waitlist-form input::placeholder { color: var(--muted); }
+.waitlist-form input:focus { border-color: var(--green); }
+
+.waitlist-form button {
+  white-space: nowrap;
+}
+
+/* --- Footer --- */
+footer {
+  padding: 32px 24px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  color: var(--muted);
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+footer a {
+  color: var(--muted);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+footer a:hover { color: var(--text); }
+
+/* --- Animations --- */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* --- Scrollbar --- */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+</style>
+</head>
+<body>
+
+<nav id="nav">
+  <div class="nav-brand"><span>></span> pung</div>
+  <div class="nav-links">
+    <a href="#compare">How it works</a>
+    <a href="#features">Features</a>
+    <a href="#setup">Setup</a>
+    <a href="https://github.com/arinyaho/pung" target="_blank" rel="noopener" class="nav-gh">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+      GitHub
+    </a>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-eyebrow">Open source CI/CD dashboard</div>
+    <h1>Your CI dashboard shows what's broken.<br>Pung tells you <em>what to fix</em>.</h1>
+    <p class="hero-sub">Prescriptive CI/CD dashboard for GitHub teams. Tracks CI health, PR velocity, and merge trends — then recommends the highest-ROI action to unblock your team.</p>
+    <div class="hero-cta">
+      <a href="#setup" class="btn-primary">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        Try it now
+      </a>
+      <a href="https://github.com/arinyaho/pung" target="_blank" rel="noopener" class="btn-ghost">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+        View on GitHub
+      </a>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- Compare -->
+<section class="compare" id="compare">
+  <div class="container">
+    <div class="reveal">
+      <div class="section-label">Before / After</div>
+      <h2>Metrics don't fix bottlenecks.<br>Actions do.</h2>
+    </div>
+    <div class="compare-grid reveal">
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dot"></div>
+          <div class="terminal-dot"></div>
+          <div class="terminal-dot"></div>
+          <span class="terminal-title">typical-dashboard.app</span>
+        </div>
+        <div class="terminal-body">
+          <div class="badge-before">Before</div>
+          <div class="line"><span class="dim">CI Success Rate</span>  <span class="yellow">68%</span></div>
+          <div class="line"><span class="dim">Avg PR Age</span>       <span class="red">4.2 days</span></div>
+          <div class="line"><span class="dim">Open PRs</span>         <span class="bright">24</span></div>
+          <div class="line"><span class="dim">Stale Branches</span>   <span class="yellow">18</span></div>
+          <div class="line"><span class="dim">Merge Velocity</span>   <span class="bright">2.1/day</span></div>
+          <div class="line">&nbsp;</div>
+          <div class="line"><span class="dim">// 12 metrics across 4 tabs</span></div>
+          <div class="line"><span class="dim">// what do you do about it?</span></div>
+          <div class="line"><span class="dim">// ...</span></div>
+        </div>
+      </div>
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dot" style="background:var(--green)"></div>
+          <div class="terminal-dot" style="background:var(--green);opacity:0.5"></div>
+          <div class="terminal-dot" style="background:var(--green);opacity:0.25"></div>
+          <span class="terminal-title">pung</span>
+        </div>
+        <div class="terminal-body">
+          <div class="badge-after">After</div>
+          <div class="line"><span class="red">!</span> <span class="bright">PR review is your bottleneck</span></div>
+          <div class="line">&nbsp;</div>
+          <div class="line"><span class="dim">Signal:</span> <span class="bright">Avg PR open 4.2 days, 3x team avg</span></div>
+          <div class="line"><span class="dim">Action:</span> <span class="green">Cap PRs at 400 lines. Split large PRs.</span></div>
+          <div class="line"><span class="dim">To-be:</span>  <span class="bright">Same-day merge rate > 70%</span></div>
+          <div class="line">&nbsp;</div>
+          <div class="line"><span class="dim">Signal:</span> <span class="bright">api-gateway CI at 58% (7d)</span></div>
+          <div class="line"><span class="dim">Action:</span> <span class="green">Freeze features. Fix CI first.</span></div>
+          <div class="line"><span class="dim">To-be:</span>  <span class="bright">Green baseline before new work</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- Features -->
+<section class="features" id="features">
+  <div class="container">
+    <div class="reveal">
+      <div class="section-label">What you get</div>
+      <h2>Everything you need.<br>Nothing you don't.</h2>
+    </div>
+    <div class="feature-grid reveal">
+      <div class="feature-card">
+        <span class="icon">&#9679;</span>
+        <h3>CI Health at a Glance</h3>
+        <p>Latest run status per repo per trigger. Success rates: 7d / 30d / 90d. Avg duration trends.</p>
+      </div>
+      <div class="feature-card">
+        <span class="icon">&#9650;</span>
+        <h3>Merge Velocity</h3>
+        <p>Track merges/day across repos. Spot downward trends before they become blockers.</p>
+      </div>
+      <div class="feature-card">
+        <span class="icon">&#9724;</span>
+        <h3>Stale Branch Detection</h3>
+        <p>Branches with no commit in 3+ days. Paginated, sortable. Clean up dead weight.</p>
+      </div>
+      <div class="feature-card">
+        <span class="icon">&#9670;</span>
+        <h3>GitHub Device Flow Auth</h3>
+        <p>Zero-config login. No OAuth app registration needed. Like <code>gh auth login</code>.</p>
+      </div>
+      <div class="feature-card">
+        <span class="icon">&#8594;</span>
+        <h3>JSON Snapshot API</h3>
+        <p><code>GET /api/snapshot</code> — full dashboard state in one call. Built for agents and automation.</p>
+      </div>
+      <div class="feature-card">
+        <span class="icon">&#9711;</span>
+        <h3>Demo Mode</h3>
+        <p><code>DEMO_MODE=true</code> — try the full dashboard with realistic fake data. No GitHub needed.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- Setup -->
+<section class="setup" id="setup">
+  <div class="container">
+    <div class="reveal">
+      <div class="section-label">Get started</div>
+      <h2>Five minutes. Three lines.</h2>
+      <p class="setup-sub">Self-hosted, open source, forever free.</p>
+    </div>
+    <div class="setup-terminal reveal">
+      <div class="terminal-bar">
+        <div class="terminal-dot"></div>
+        <div class="terminal-dot"></div>
+        <div class="terminal-dot"></div>
+        <span class="terminal-title">~</span>
+      </div>
+      <div class="terminal-body">
+        <div class="line"><span class="prompt">$</span> <span class="bright">git clone https://github.com/arinyaho/pung.git</span></div>
+        <div class="line"><span class="prompt">$</span> <span class="bright">cd pung && cp .env.example .env</span></div>
+        <div class="line"><span class="dim"># set GITHUB_TOKEN, REPOS</span></div>
+        <div class="line"><span class="prompt">$</span> <span class="bright">docker compose up -d</span></div>
+        <div class="line">&nbsp;</div>
+        <div class="line"><span class="green">Ready at http://localhost:2357</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- Waitlist -->
+<section class="waitlist" id="waitlist">
+  <div class="container reveal">
+    <div class="section-label">Coming soon</div>
+    <h2>Want managed hosting?</h2>
+    <p>We're building a hosted version with cross-team benchmarking.<br>Leave your email — we'll let you know.</p>
+    <form class="waitlist-form" onsubmit="handleWaitlist(event)">
+      <input type="email" placeholder="you@team.com" required id="waitlist-email">
+      <button type="submit" class="btn-primary">Notify me</button>
+    </form>
+    <p id="waitlist-msg" style="margin-top:16px;font-size:12px;color:var(--green);display:none"></p>
+  </div>
+</section>
+
+<footer>
+  <span>Pung &mdash; MIT License</span>
+  <a href="https://github.com/arinyaho/pung" target="_blank" rel="noopener">github.com/arinyaho/pung</a>
+</footer>
+
+<script>
+// Nav scroll effect
+const nav = document.getElementById('nav');
+window.addEventListener('scroll', () => {
+  nav.classList.toggle('scrolled', window.scrollY > 40);
+});
+
+// Reveal on scroll
+const reveals = document.querySelectorAll('.reveal');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('visible');
+      observer.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.15 });
+reveals.forEach(el => observer.observe(el));
+
+// Waitlist (stores in localStorage for now — replace with real backend)
+function handleWaitlist(e) {
+  e.preventDefault();
+  const email = document.getElementById('waitlist-email').value;
+  const existing = JSON.parse(localStorage.getItem('pung_waitlist') || '[]');
+  if (!existing.includes(email)) {
+    existing.push(email);
+    localStorage.setItem('pung_waitlist', JSON.stringify(existing));
+  }
+  document.getElementById('waitlist-msg').textContent = 'Got it. We\'ll reach out when it\'s ready.';
+  document.getElementById('waitlist-msg').style.display = 'block';
+  document.getElementById('waitlist-email').value = '';
+}
+</script>
+
+</body>
+</html>
